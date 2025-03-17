@@ -27,6 +27,11 @@ public class AccountController {
         return new ResponseEntity<>(responseDto,HttpStatus.OK);
     }
 
+    @PostMapping("/loginSystem")
+    public  ResponseDto<Account> login(@RequestBody()LoginDto loginDto) {
+        return accountServices.login(loginDto);
+    }
+
     @GetMapping(value = "/secure")
     public String getSecure() {
         return "Secure endpoint available";

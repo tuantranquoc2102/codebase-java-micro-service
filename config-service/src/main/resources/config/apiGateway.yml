@@ -1,0 +1,43 @@
+server:
+  port: 11000
+logging:
+  file.name: logs/api_gateway.log
+  pattern:
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss}){blue} %clr(${LOG_LEVEL_PATTERN:-%5p}) %m%n"
+    file: "%d [%t] %-5level %logger{36} - %msg%n"
+  level:
+    ROOT: DEBUG
+    org.hibernate: DEBUG
+    org.springframework: DEBUG
+    com.microservice: DEBUG
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8800/eureka
+    register-with-eureka: true
+    fetch-registry: true
+
+spring:
+  main:
+    web-application-type: reactive
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: userservice
+          uri: lb://userservice
+          predicates:
+            - Path=/users/**
+        - id: authservice
+          uri: lb://authservice
+          predicates:
+            - Path=/auth/**
+        - id: mongoservice
+          uri: lb://mongoservice
+          predicates:
+            - Path=/emp/**
+jwt:
+  secret: BvPHGM8C0ia4uOuxxqPD5DTbWC9F9TWvPStp3pb7ARo0oK2mJ3pd3YG4lxA9i8bj6OTbadwezxgeEByY

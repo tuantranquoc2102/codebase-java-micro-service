@@ -1,0 +1,35 @@
+server:
+  port: 8800
+
+eureka:
+  server:
+    renewal-percent-threshold: 0.5
+    enable-self-preservation: true
+    eviction-interval-timer-in-ms: 1000
+  renewalPercentThreshold: 0.85
+  instance:
+    hostname: localhost
+  client:
+    registerWithEureka: false
+    fetchRegistry: false
+
+logging:
+  file.name: logs/app_server.log
+  pattern:
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss}){blue} %clr(${LOG_LEVEL_PATTERN:-%5p}) %m%n"
+    file: "%d [%t] %-5level %logger{36} - %msg%n"
+  level:
+    ROOT: DEBUG
+    org.hibernate: DEBUG
+    org.springframework: DEBUG
+    com.microservice: DEBUG
+
+spring:
+  output:
+    ansi:
+      enabled: always
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0

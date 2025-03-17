@@ -1,10 +1,9 @@
 package com.microservice.authService.services;
 
-import com.microservice.authService.dto.AuthRequest;
-import com.microservice.authService.dto.AuthResponse;
-import com.microservice.authService.dto.UserVO;
+import com.microservice.authService.dto.*;
 import com.microservice.authService.util.JwtUtil;
 import io.jsonwebtoken.lang.Assert;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
@@ -35,5 +34,31 @@ public class AuthService implements IAuthService {
         String refreshToken = jwtUtil.generate(userVO, "REFRESH");
 
         return new AuthResponse(accessToken, refreshToken);
+    }
+
+    @Override
+    public LoginResponse loginSystem(LoginRequest loginRequest) {
+        LoginResponse loginResponse = new LoginResponse();
+
+        //validation
+        if (StringUtils.isEmpty(loginRequest.getAccountName()) ||
+                StringUtils.isEmpty((loginRequest.getPassword()))) {
+            loginResponse.setSuccess(false);
+            loginResponse.setMessage("User name (password) must be required");
+            return loginResponse;
+        }
+
+        loginResponse = restTemplate.postForObject("http://userservice/users/loginSystem", loginRequest, LoginResponse.class);
+
+        if (loginResponse.isSuccess()) {
+            String accessToken = jwtUtil.generate(loginResponse.getData(), "ACCESS");
+            String refreshToken = jwtUtil.generate(loginResponse.getData(), "REFRESH");
+
+            AuthResponse authResponse = new AuthResponse(accessToken, refreshToken);
+
+            loginResponse.setAuthResponse(authResponse);
+        }
+
+        return loginResponse;
     }
 }
