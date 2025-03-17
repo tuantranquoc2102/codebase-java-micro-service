@@ -28,6 +28,7 @@
         <module>api-gateway</module>
         <module>auth-service</module>
         <module>config-service</module>
+        <module>mongo-service</module>
     </modules>
     <build>
         <plugins>
