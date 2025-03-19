@@ -1,13 +1,22 @@
 server:
-  port: 11002
+  port: 11004
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8800/eureka
+      defaultZone: http://eureka-server:8800/eureka
     register-with-eureka: true
     fetch-registry: true
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  data:
+    mongodb:
+      authentication-database: admin
+      database: employeeDb
+      host: host.docker.internal
+      port: 27017
 logging:
-  file.name: logs/authService.log
+  file.name: logs/mongoDb.log
   pattern:
     console: "%clr(%d{yyyy-MM-dd HH:mm:ss}){blue} %clr(${LOG_LEVEL_PATTERN:-%5p}) %m%n"
     file: "%d [%t] %-5level %logger{36} - %msg%n"

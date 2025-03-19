@@ -1,5 +1,5 @@
 spring:
   application:
-    name: mongoService
+    name: mongo-service
   config:
-    import: "optional:configserver:http://localhost:11009"
+    import: "optional:configserver:http://config-server:11009"

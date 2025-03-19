@@ -13,7 +13,7 @@ logging:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8800/eureka
+      defaultZone: http://eureka-server:8800/eureka
     register-with-eureka: true
     fetch-registry: true
 
@@ -27,16 +27,16 @@ spring:
           enabled: true
           lower-case-service-id: true
       routes:
-        - id: userservice
-          uri: lb://userservice
+        - id: user-service
+          uri: lb://user-service
           predicates:
             - Path=/users/**
-        - id: authservice
-          uri: lb://authservice
+        - id: auth-service
+          uri: lb://auth-service
           predicates:
             - Path=/auth/**
-        - id: mongoservice
-          uri: lb://mongoservice
+        - id: mongo-service
+          uri: lb://mongo-service
           predicates:
             - Path=/emp/**
 jwt:

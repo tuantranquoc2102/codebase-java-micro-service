@@ -1,15 +1,16 @@
 package org.microservice.dto;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-import java.io.Serializable;
 
+
+
+@AllArgsConstructor
 @NoArgsConstructor
 @Setter
 @Getter
-public class LoginDto implements Serializable  {
+@Builder
+public class LoginDto  {
     private String accountName;
     private String password;
 }

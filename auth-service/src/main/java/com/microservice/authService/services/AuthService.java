@@ -27,7 +27,7 @@ public class AuthService implements IAuthService {
         //do validation if user already exists
         authRequest.setPassword(BCrypt.hashpw(authRequest.getPassword(), BCrypt.gensalt()));
 
-        UserVO userVO = restTemplate.postForObject("http://localhost:11000/users/create", authRequest, UserVO.class);
+        UserVO userVO = restTemplate.postForObject("http://user-service/users/create", authRequest, UserVO.class);
         Assert.notNull(userVO, "Failed to register user. Please try again later");
 
         String accessToken = jwtUtil.generate(userVO, "ACCESS");
@@ -48,7 +48,7 @@ public class AuthService implements IAuthService {
             return loginResponse;
         }
 
-        loginResponse = restTemplate.postForObject("http://userservice/users/loginSystem", loginRequest, LoginResponse.class);
+        loginResponse = restTemplate.postForObject("http://user-service/users/loginSystem", loginRequest, LoginResponse.class);
 
         if (loginResponse.isSuccess()) {
             String accessToken = jwtUtil.generate(loginResponse.getData(), "ACCESS");

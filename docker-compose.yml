@@ -1,0 +1,135 @@
+version: '3.8'
+
+services:
+  # Eureka Server
+  config-server:
+    build:
+      context: ./config-service
+      dockerfile: Dockerfile
+    container_name: config-server
+    environment:
+      - SPRING_APPLICATION_NAME=config-server
+    ports:
+      - "11009:11009"
+    networks:
+      - mynetwork
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://config-server:11009/actuator/health"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+  # Eureka Server
+  eureka-server:
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    container_name: eureka-server
+    ports:
+      - "8800:8800"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CONFIG_IMPORT=configserver:http://config-server:11009
+      - EUREKA_INSTANCE_HOSTNAME=eureka-server
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=false
+      - EUREKA_CLIENT_FETCH_REGISTRY=false
+      - SERVER_PORT=8800
+    networks:
+      - mynetwork
+    depends_on:
+      config-server:
+        condition: service_healthy
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "11000:11000"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_APPLICATION_NAME=api-gateway
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:11009/
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8800/eureka/
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+      - EUREKA_CLIENT_FETCH_REGISTRY=true
+    depends_on:
+      - eureka-server
+      - config-server
+      - user-service
+      - mongo-service
+      - auth-service
+    networks:
+      - mynetwork
+  # User Service
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    ports:
+      - "11001:11001"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_APPLICATION_NAME=user-service
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:11009/
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8800/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-container:3306/user-services
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+      - EUREKA_CLIENT_FETCH_REGISTRY=true
+    depends_on:
+      - config-server
+      - eureka-server
+    networks:
+      - mynetwork
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    ports:
+      - "11002:11002"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_APPLICATION_NAME=auth-service
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:11009/
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8800/eureka/
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+      - EUREKA_CLIENT_FETCH_REGISTRY=true
+    depends_on:
+      - config-server
+      - eureka-server
+      - user-service
+    networks:
+      - mynetwork
+
+  # Mongo Service
+  mongo-service:
+    build:
+      context: ./mongo-service
+      dockerfile: Dockerfile
+    container_name: mongo-service
+    ports:
+      - "11004:11004"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_APPLICATION_NAME=mongo-service
+      - SPRING_CONFIG_IMPORT=configserver:http://config-server:11009
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8800/eureka/
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+      - EUREKA_CLIENT_FETCH_REGISTRY=true
+      - SPRING_DATA_MONGODB_URI=mongodb://host.docker.internal:27017/employeeDb
+    depends_on:
+      - config-server
+      - eureka-server
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    external: true
+    driver: bridge

@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: mongo-service
+  cloud:
+    config:
+      uri: http://config-server:11009
+      fail-fast: true

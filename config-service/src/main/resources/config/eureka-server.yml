@@ -4,11 +4,11 @@ server:
 eureka:
   server:
     renewal-percent-threshold: 0.5
-    enable-self-preservation: true
+    enable-self-preservation: false
     eviction-interval-timer-in-ms: 1000
   renewalPercentThreshold: 0.85
   instance:
-    hostname: localhost
+    hostname: eureka-server
   client:
     registerWithEureka: false
     fetchRegistry: false
