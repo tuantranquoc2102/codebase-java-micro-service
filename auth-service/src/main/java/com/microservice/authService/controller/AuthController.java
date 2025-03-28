@@ -1,9 +1,6 @@
 package com.microservice.authService.controller;
 
-import com.microservice.authService.dto.AuthRequest;
-import com.microservice.authService.dto.AuthResponse;
-import com.microservice.authService.dto.LoginRequest;
-import com.microservice.authService.dto.LoginResponse;
+import com.microservice.authService.dto.*;
 import com.microservice.authService.services.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,8 +23,14 @@ public class AuthController {
     }
 
     @PostMapping(value = "/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody AuthRequest authRequest) {
-        return ResponseEntity.ok(authService.register(authRequest));
+    public ResponseEntity<ResponseDto<AuthResponse>> register(@RequestBody AuthRequest authRequest) {
+        ResponseDto<AuthResponse> responseDto = authService.register(authRequest);
+
+        if (!responseDto.isSuccess()) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseDto);
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     @PostMapping(value = "/login")

@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # Eureka Server
+  # Config Server
   config-server:
     build:
       context: ./config-service
@@ -13,11 +13,13 @@ services:
       - "11009:11009"
     networks:
       - mynetwork
+    restart: always
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://config-server:11009/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:11009/actuator/health"]
       interval: 10s
       retries: 5
-      start_period: 10s
+      start_period: 20s
+
   # Eureka Server
   eureka-server:
     build:
@@ -38,6 +40,13 @@ services:
     depends_on:
       config-server:
         condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8800/actuator/health"]
+      interval: 10s
+      retries: 5
+      start_period: 20s
+
   # API Gateway
   api-gateway:
     build:
@@ -54,13 +63,34 @@ services:
       - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
       - EUREKA_CLIENT_FETCH_REGISTRY=true
     depends_on:
-      - eureka-server
-      - config-server
-      - user-service
-      - mongo-service
-      - auth-service
+      eureka-server:
+        condition: service_healthy
     networks:
       - mynetwork
+    restart: always
+
+  # MySQL Database
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-db
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=user-services
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=pass
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - mynetwork
+    restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+      start_period: 20s
+
   # User Service
   user-service:
     build:
@@ -74,16 +104,19 @@ services:
       - SPRING_APPLICATION_NAME=user-service
       - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:11009/
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8800/eureka/
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-container:3306/user-services
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/user-services
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
       - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
       - EUREKA_CLIENT_FETCH_REGISTRY=true
     depends_on:
-      - config-server
-      - eureka-server
+      mysql-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
     networks:
       - mynetwork
+    restart: always
 
   # Auth Service
   auth-service:
@@ -101,11 +134,28 @@ services:
       - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
       - EUREKA_CLIENT_FETCH_REGISTRY=true
     depends_on:
-      - config-server
       - eureka-server
       - user-service
     networks:
       - mynetwork
+    restart: always
+
+  # MongoDB
+  mongo-db:
+    image: mongo:6.0
+    container_name: mongo-db
+    ports:
+      - "27017:27017"
+    networks:
+      - mynetwork
+    restart: always
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh --quiet
+      interval: 10s
+      retries: 5
+      start_period: 20s
 
   # Mongo Service
   mongo-service:
@@ -122,14 +172,18 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8800/eureka/
       - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
       - EUREKA_CLIENT_FETCH_REGISTRY=true
-      - SPRING_DATA_MONGODB_URI=mongodb://host.docker.internal:27017/employeeDb
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo-db:27017/employeeDb
     depends_on:
-      - config-server
-      - eureka-server
+      mongo-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
     networks:
       - mynetwork
-
+    restart: always
+volumes:
+  mysql_data:
+  mongo_data:
 networks:
   mynetwork:
-    external: true
     driver: bridge

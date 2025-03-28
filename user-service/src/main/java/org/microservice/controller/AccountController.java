@@ -38,13 +38,14 @@ public class AccountController {
     }
 
     @PostMapping(value = "/create")
-    public ResponseEntity<CreateNewAccountDto> create(@RequestBody() CreateNewAccountDto dto) {
+    public ResponseEntity<ResponseDto<CreateNewAccountDto>> create(@RequestBody() CreateNewAccountDto dto) {
+        ResponseDto<CreateNewAccountDto> response = new ResponseDto<>();
         try {
-            accountServices.createNewUser(dto);
+            response = accountServices.createNewUser(dto);
         } catch (Exception ex) {
-            return  new ResponseEntity<>(dto, HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
         }
 
-        return new ResponseEntity<>(dto, HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

@@ -10,5 +10,5 @@ import org.springframework.stereotype.Service;
 public interface IAccountServices {
     ResponseDto<Account> login(LoginDto loginDto);
 
-    void createNewUser(CreateNewAccountDto loginDto);
+    ResponseDto<CreateNewAccountDto> createNewUser(CreateNewAccountDto loginDto);
 }

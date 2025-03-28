@@ -27,4 +27,10 @@ public class Employee {
     private String email;
 
     private String phoneNumber;
+
+    private Boolean isRetired;
+
+    private Integer status;
+
+    private Date retiredDate;
 }

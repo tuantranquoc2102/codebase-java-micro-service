@@ -25,4 +25,7 @@ public class Account {
 
     @Column(name = "email")
     private String email;
+
+    @Column(name = "roleId")
+    private Integer roleId;
 }

@@ -3,3 +3,7 @@ spring:
     name: user-service
   config:
     import: "optional:configserver:http://config-server:11009"
+logging:
+  level:
+    ROOT: WARN
+    org.microservice: DEBUG
