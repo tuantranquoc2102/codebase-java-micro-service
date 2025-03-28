@@ -38,7 +38,7 @@ public class AuthService implements IAuthService {
         String msg;
         try {
             //do validation if user already exists
-            authRequest.setPassword(BCrypt.hashpw(authRequest.getPassword(), BCrypt.gensalt()));
+            //authRequest.setPassword(BCrypt.hashpw(authRequest.getPassword(), BCrypt.gensalt()));
 
             ResponseEntity<ResponseDto<UserVO>> response = restTemplate.exchange(
                     "http://user-service/users/create",
